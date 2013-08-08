@@ -1,0 +1,24 @@
+<h1>重建一个干净的repo或git目录</h1>
+
+<p>有时候，我们在开发工程由于某种原因导致在某个目录下产生了一些无法修复的问题，需要重新回复到代码没有被本地修改过时的状态。</p>
+
+<p>如果我们重新去服务器上抓取一遍代码，会非常耗时。一个简便的方法就是通过本地目录里的.repo或.git文件方便的重建目录。</p>
+
+<p><strong>==针对repo==</strong></p>
+
+<blockquote>
+  <p>$ mkdir new-kunlun <br />
+$ cp -r kunlun/.repo new-kunlun/ <br />
+$ cd new-kunlun; repo sync #或者 repo sync -l</p>
+</blockquote>
+
+<p><strong>==针对git==</strong></p>
+
+<blockquote>
+  <p>$ mkdir new-project <br />
+$ cp -r project/.git new-project/ <br />
+$ cd new-project; git init <br />
+$ cd new-project; git reset –hard HEAD</p>
+</blockquote>
+
+<p>雕虫小计，博君一粲</p>

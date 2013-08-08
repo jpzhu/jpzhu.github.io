@@ -1,0 +1,28 @@
+<h1>利用lighttpd服务器支持php网页(fedora core)</h1>
+
+<p>想简单的学学php，但是又不想安装apache，太庞大了，所以准备用lighttpd作为http服务器。</p>
+
+<p><strong>安装lighttpd的软件包和php软件包</strong></p>
+
+<blockquote>
+  <p>sudo yum install lighttpd <br />
+sudo yum install php</p>
+</blockquote>
+
+<p><strong>启动lighttpd服务</strong>  </p>
+
+<blockquote>
+  <p>sudo service lighttpd start</p>
+</blockquote>
+
+<p>【debug 1】此时，发现index.html网页可以显示，而index.php网页显示403-forbidden-error。 <br />
+据网上提示要改动/etc/lighttpd/lighttpd.conf文件，要fastcgi.server支持php.
+lighttpd.conf有相应配置，把注释去掉就可以。</p>
+
+<p>【debug 2】重新“sudo service lighttpd restart”启动lighttpd服务，发现还是403-forbidden-error错误。 <br />
+此时查看/var/log/lighttpd/error.log文件，可看到警告”WARNING: unknown config-key: fastcgi.server (ignored)” <br />
+说明这个关键字不认，说明fastcgi模块没有始能。需要在 <br />
+/etc/lighttpd/lighttpd.conf文件中把server.modules列表里增加 “mod_fastcgi”,</p>
+
+<p>【debug 3】此时会提示无法加载/usr/lib/lighttpd/mod_fastcgi.so。这是因为软件包lighttpd-fastcgi没有安装。用
+sudo rpm install lighttpd-fastcgi 安装上即可。</p>

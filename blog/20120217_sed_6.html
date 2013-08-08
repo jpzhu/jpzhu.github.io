@@ -1,0 +1,141 @@
+<h1>sed 介绍(6) a命令(append)/i命令(insert)/c命令(change)</h1>
+
+<p>在了解了模式空间后，我们再来多了解几个命令，都是比较常用而易于理解的。</p>
+
+<hr />
+
+<p><em>a\TEXT</em> <br />
+该命令a\的作用是在一个sed处理周期结束后，输出内容TEXT。 <br />
+zhu@X200:~$ cat source.list</p>
+
+<blockquote>
+  <p>deb http://cn.archive.ubuntu.com/ubuntu/ natty universe <br />
+deb-src http://cn.archive.ubuntu.com/ubuntu/ natty universe <br />
+deb http://cn.archive.ubuntu.com/ubuntu/ natty-updates universe <br />
+deb-src http://cn.archive.ubuntu.com/ubuntu/ natty-updates universe</p>
+</blockquote>
+
+<p>假设我们对上面这个文件的最后面要加上一行日期，那么可以用 <br />
+zhu@X200:~$ <em>* sed “$ a# Create by Bugfly Zhu on $(date)” source.list *</em></p>
+
+<blockquote>
+  <p>deb http://cn.archive.ubuntu.com/ubuntu/ natty universe <br />
+deb-src http://cn.archive.ubuntu.com/ubuntu/ natty universe <br />
+deb http://cn.archive.ubuntu.com/ubuntu/ natty-updates universe <br />
+deb-src http://cn.archive.ubuntu.com/ubuntu/ natty-updates universe  </p>
+</blockquote>
+
+<p>注意第一个美元号$，是匹配最后一行的意思 <br />
+虽然命令里写的是”a\”,其实“a空格”,或者直接”a”都可以。区别是”a\“可以在行首输出空格</p>
+
+<hr />
+
+<p><em>i\TEXT</em> <br />
+该命令i\的作用是在执行到这个命令的时候立刻输出内容TEXT <br />
+zhu@X200:~$ sed “1 i\hello,sed\nhello,world” source.list</p>
+
+<blockquote>
+  <p>hello,sed <br />
+hello,world <br />
+deb http://cn.archive.ubuntu.com/ubuntu/ natty universe <br />
+deb-src http://cn.archive.ubuntu.com/ubuntu/ natty universe <br />
+deb http://cn.archive.ubuntu.com/ubuntu/ natty-updates universe <br />
+deb-src http://cn.archive.ubuntu.com/ubuntu/ natty-updates universe  </p>
+</blockquote>
+
+<p>我们利用”i\”命令在行首加入了两行内容，”\n”代表了换行。这个功能可以批量为你的代码增加一个版权说明。</p>
+
+<hr />
+
+<p>注意”a\“和”i\”在输出TEXT时间点上的区别。在单行的sed程序里这个区别不重要，但是如果写多行程序时这个区别很重要。 <br />
+zhu@X200:~$ cat a.sed</p>
+
+<pre><code>1 a\hello,word
+1 p
+</code></pre>
+
+<p>zhu@X200:~$ sed -nf a.sed source.list</p>
+
+<blockquote>
+  <p>deb http://cn.archive.ubuntu.com/ubuntu/ natty universe <br />
+hello,word</p>
+</blockquote>
+
+<p>看到了么，在程序里命令”a\”虽然在命令p之前，但是它的输出却是在命令p之后，也就是sed执行周期之后【如果没有-n选项，那么a\的输出还在默认输出之后】 <br />
+zhu@X200:~$ cat i.sed</p>
+
+<pre><code>1 p
+1 i\hello,word
+</code></pre>
+
+<p>zhu@X200:~$ sed -nf i.sed source.list</p>
+
+<blockquote>
+  <p>deb http://cn.archive.ubuntu.com/ubuntu/ natty universe <br />
+hello,word</p>
+</blockquote>
+
+<p>再来看”i\”命令，并没有在执行周期之前，而是在执行到命令的时候立刻输出</p>
+
+<hr />
+
+<p><strong>c\TEXT</strong> 
+回顾一下，刚刚学过的a命令，i命令，还有前面几节的p命令，d命令是不是和vim里的命令很相似，没错vim和sed的祖宗都是行编辑程序ed，设计风格高度一致。 <br />
+不难理解命令”c\”就是改变匹配行的内容，不过也不完全是。这个命令的标准解释是 <br />
+<strong>执行到该命令的时候删除模式空间，并且输出TEXT的内容</strong> <br />
+注意这条命令和s的区别。 s命令是修改模式空间，并不输出。【模式空间还在，只是被修改了】 <br />
+而c命令，是删除了模式空间，并输出后面的内容.【模式空间被删除，sed周期结束，后面加指令也不会有作用了】 <br />
+zhu@X200:~$ sed -n “c\hello,world” source.list  </p>
+
+<blockquote>
+  <p>hello,world <br />
+hello,world <br />
+hello,world <br />
+hello,world  </p>
+</blockquote>
+
+<p>可以看到，即使加了”-n“选项，c命令后的内容还是被输出了。如果是用的s命令，输出将是空的。</p>
+
+<p>———————分割线,下面的内容更不精彩——————— <br />
+还有几个命令，不是很常用，但是技不压身…</p>
+
+<p>y/SOURCE-CHARS/DEST-CHARS/ <br />
+在模式空间里用目标串中的每个字符替换掉源串中对应的字符，源串和目标串的字符数必须一样。 <br />
+zhu@X200:~$ sed “y/src/SRC/” source.list  </p>
+
+<blockquote>
+  <p>deb http://Cn.aRChive.ubuntu.Com/ubuntu/ natty univeRSe <br />
+deb-SRC http://Cn.aRChive.ubuntu.Com/ubuntu/ natty univeRSe <br />
+deb http://Cn.aRChive.ubuntu.Com/ubuntu/ natty-updateS univeRSe <br />
+deb-SRC http://Cn.aRChive.ubuntu.Com/ubuntu/ natty-updateS univeRSe  </p>
+</blockquote>
+
+<p>瞧，除了src被替换成SRC，所有的s,r,c都被大写了。 这个功能有啥用？写个天书什么的，比如rot13编码，将26个字母做个偏移。</p>
+
+<p>r FILENAME <br />
+在sed执行周期结束后，将FILENAME里的内容输出 <br />
+zhu@X200:~$ cat a.txt  </p>
+
+<pre><code>/************************/
+/***This is Copyright****/
+/************************/
+</code></pre>
+
+<p>瞅瞅，我们将一个版权文件加入到一个文件中 <br />
+zhu@X200:~$ sed “1 ra.txt” source.list</p>
+
+<blockquote>
+  <p>deb http://cn.archive.ubuntu.com/ubuntu/ natty universe <br />
+/<strong><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</strong>/ <br />
+/<strong></em>This is Copyright<em>*</strong>/ <br />
+/<strong></em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em>*</strong>/ <br />
+deb-src http://cn.archive.ubuntu.com/ubuntu/ natty universe <br />
+deb http://cn.archive.ubuntu.com/ubuntu/ natty-updates universe <br />
+deb-src http://cn.archive.ubuntu.com/ubuntu/ natty-updates universe  </p>
+</blockquote>
+
+<p>额，碰到问题了，通常我们都是把版权放到最前面，这个命令只能放到第一行之后。就把这当作一个思考题送给大家吧:)
+另: FILENAEME也是支持/dev/stdin的哦，就是标准输入。</p>
+
+<p>w FILENAME <br />
+在执行到该条命令的时候，将模式空间的内容输出到文件。</p>

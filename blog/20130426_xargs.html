@@ -1,0 +1,5 @@
+<h1>利用xargs给有空格的.c或.h文件生成tag文件。</h1>
+
+<p>find . -name “*.[ch]” | xargs -I{} ctags -a {} ;</p>
+
+<p>如果用 find . -name “*.[ch]” | xargs ctags -a 命令时，会出某种错。比如文件列表里出现”Application SDLMain.h”这个时，会把这个文件当成两个文件来处理。</p>
